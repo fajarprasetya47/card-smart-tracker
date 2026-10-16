@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { ServiceTile, type DashboardService } from '../components/ServiceTile';
 import { useAuth } from '../state/AuthProvider';
+import { useSubscriptions } from '../state/SubscriptionProvider';
 import { formatCurrency } from '../utils';
 
 const serviceCards: DashboardService[] = [
@@ -26,9 +27,12 @@ const quickActions = [
 
 export function DashboardPage() {
   const { session, logout } = useAuth();
+  const { cards, cardsLoading, error } = useSubscriptions();
   const navigate = useNavigate();
   const customerName = session?.customer.fullName ?? 'Customer';
   const initials = customerName.charAt(0).toUpperCase();
+  const monthlySubscriptions = cards.reduce((total, card) => total + card.totalActiveMonthlyAmount, 0);
+  const activeSubscriptions = cards.reduce((total, card) => total + card.activeSubscriptionCount, 0);
 
   function handleSignOut() {
     logout();
@@ -71,7 +75,13 @@ export function DashboardPage() {
         <span className="insight-icon"><Icon name="sparkle" size={20} /></span>
         <div>
           <span className="insight-title">AI INSIGHT</span>
-          <p>You spend <strong>{formatCurrency(2_979_000)}/month</strong> on credit-card subscriptions across 8 services. Tap below to review.</p>
+          {cardsLoading ? (
+            <p>Loading your credit-card subscription summary…</p>
+          ) : error ? (
+            <p role="alert">Your credit-card subscription summary could not be loaded. Open Credit Card to retry.</p>
+          ) : (
+            <p>You spend <strong>{formatCurrency(monthlySubscriptions)}/month</strong> on credit-card subscriptions across {activeSubscriptions} services. Tap below to review.</p>
+          )}
         </div>
       </section>
 

@@ -1,17 +1,18 @@
 # Card Smart Tracker
 
-Prototipe UI frontend untuk melihat kartu kredit dan mengelola status subscription layanan secara langsung. Seluruh data bersifat mock dan perubahan subscription hanya tersimpan di memori aplikasi selama aplikasi berjalan.
+Frontend Card Smart Tracker untuk melihat kartu kredit dan mengelola pencatatan subscription melalui backend Spring Boot.
 
 ## Fitur
 
 - Dashboard dengan navigasi ke modul kartu kredit.
 - Login backend JWT di `/login`, reset password UI prototype di `/forgot-password`, dan pendaftaran UI prototype di `/sign-up`.
-- Daftar kartu kredit mock beserta jaringan, nomor yang dimasking, saldo, limit, dan ringkasan subscription.
-- Halaman detail kartu dengan informasi limit, saldo, jatuh tempo, serta daftar layanan.
-- Subscribe langsung dan unsubscribe melalui dialog konfirmasi.
-- Ringkasan biaya dan jumlah subscription diperbarui otomatis.
+- Daftar dan detail kartu kredit dari API, dengan nomor kartu yang dimasking.
+- Daftar subscription aktif maupun riwayat nonaktif per kartu dari API.
+- Subscribe ulang dan unsubscribe melalui endpoint backend, dengan dialog konfirmasi untuk unsubscribe.
+- Tambah pencatatan subscription bulanan pada kartu melalui endpoint backend.
+- Ringkasan jumlah dan biaya subscription diperbarui setelah perubahan berhasil.
 - Toast setelah subscribe/unsubscribe.
-- Modal mock untuk tombol tambah kartu.
+- Informasi bahwa tambah kartu belum tersedia karena backend belum menyediakan endpoint tersebut.
 - Rute kartu tidak ditemukan dan halaman 404.
 - Layout responsif untuk mobile, tablet, dan desktop.
 - Toggle tema gelap/terang yang berlaku di seluruh halaman selama aplikasi terbuka.
@@ -54,9 +55,11 @@ VITE_API_BASE_URL=/api
 VITE_API_PROXY_TARGET=http://localhost:18081
 ```
 
-Development server Vite mem-proxy request `/api` ke backend pada `VITE_API_PROXY_TARGET`, sehingga request login tidak memerlukan CORS browser. Pastikan backend dan MySQL berjalan. Setelah mengubah file env, restart Vite.
+Development server Vite mem-proxy request `/api` ke backend pada `VITE_API_PROXY_TARGET`, sehingga request browser (termasuk dari perangkat lain di LAN) tetap diteruskan oleh laptop dan tidak memerlukan CORS browser. Pastikan backend dan MySQL berjalan. Setelah mengubah file env, restart Vite.
 
-Login memakai `POST /api/auth/login`. JWT dan profil pengguna disimpan dalam `sessionStorage` selama tab browser aktif; token dihapus saat logout atau saat kedaluwarsa. Kredensial tidak disimpan. Route Dashboard dan kartu memerlukan sesi login. **Data kartu dan subscription masih mock frontend**; integrasi endpoint kartu merupakan tahap terpisah.
+Frontend memanggil `POST /api/auth/login`. JWT dan profil pengguna disimpan dalam `sessionStorage` selama tab browser aktif; token dihapus saat logout atau saat kedaluwarsa. Kredensial tidak disimpan. Route Dashboard dan kartu memerlukan sesi login. API kartu dan subscription memakai JWT dari sesi tersebut.
+
+Jika ingin membuka frontend dari perangkat lain di jaringan yang sama, buka `http://<IP-laptop>:5173` dan pastikan firewall mengizinkan koneksi. Vite proxy tetap meneruskan API ke backend di laptop. Jangan mengekspos development server ke internet publik.
 
 ## Build production
 
@@ -84,26 +87,26 @@ npm run preview
 | `/credit-cards/:cardId` | Detail kartu dan pengelolaan layanan |
 | Rute lain | Halaman 404 |
 
-## Data mock dan state
+## Integrasi kartu dan subscription
 
-Data kartu serta layanan berada di [`src/data.ts`](./src/data.ts). Status subscription awal dan aksi state berada di [`src/state/SubscriptionProvider.tsx`](./src/state/SubscriptionProvider.tsx).
+Endpoint terintegrasi:
 
-State subscription dihitung per kombinasi ID kartu dan ID layanan. Jumlah subscription aktif serta biaya bulanannya merupakan nilai turunan, bukan state terpisah. Aksi subscribe/unsubscribe idempoten dan tidak mengubah saldo, limit, atau data kartu lainnya.
+- `GET /api/cards` — daftar kartu nasabah.
+- `GET /api/cards/{cardId}` — detail kartu.
+- `GET /api/cards/{cardId}/subscriptions` — subscription aktif dan nonaktif.
+- `POST /api/cards/{cardId}/subscriptions` — tambah pencatatan subscription baru (form saat ini membuat siklus bulanan).
+- `POST /api/subscriptions/{id}/subscribe` — aktifkan kembali subscription nonaktif.
+- `POST /api/subscriptions/{id}/unsubscribe` — nonaktifkan subscription aktif.
 
-### Data awal
-
-- **Visa Platinum:** 2 layanan aktif, Rp 241.000/bulan.
-- **Mastercard Gold:** 3 layanan aktif, Rp 335.000/bulan.
-- **Visa Signature:** belum memiliki layanan aktif.
+Status tampilan dan jumlah/biaya ringkasan mengikuti respons backend; data tidak disimpan sebagai mock lokal frontend.
 
 ## Batasan prototipe
 
 - Login terhubung ke backend JWT. Endpoint reset password dan pendaftaran belum terhubung; keduanya hanya simulasi UI tanpa mengirim email atau membuat akun.
-- Daftar kartu dan subscription masih memakai data mock frontend; belum membaca atau mengubah data kartu melalui API.
-- Tidak ada data kartu sungguhan; nomor kartu hanya ditampilkan dalam bentuk masked.
-- Perubahan subscription hanya ada di memori browser dan kembali ke data awal setelah halaman dimuat ulang.
+- Backend belum menyediakan endpoint untuk menambahkan kartu. Tombol tambah kartu menjelaskan batasan tersebut dan tidak membuat data palsu.
+- Subscribe/unsubscribe mengubah status pencatatan pada backend; aksi ini tidak membatalkan atau membuat tagihan secara langsung di penyedia layanan.
+- Saldo akun/dashboard selain informasi kartu masih memakai nilai UI prototipe karena belum ada endpoint ringkasan akun.
 - Preferensi tema juga hanya berada di memori; setelah reload, tema gelap menjadi default kembali.
-- Tombol tambah kartu hanya menampilkan pemberitahuan; tidak menambahkan kartu.
 - Fitur layanan selain kartu kredit hanya ditampilkan sebagai “Coming soon”.
 
 ## Struktur kode
@@ -113,8 +116,11 @@ src/
   App.tsx
   api/
     auth.ts
+    cards.ts
+    client.ts
     sessionStorage.ts
   components/
+    AddSubscriptionDialog.tsx
     AuthBrand.tsx
     CardSummary.tsx
     ConfirmDialog.tsx
@@ -129,7 +135,6 @@ src/
     SubscriptionList.tsx
     ThemeToggle.tsx
     Toast.tsx
-  data.ts
   main.tsx
   pages/
     CardDetailPage.tsx

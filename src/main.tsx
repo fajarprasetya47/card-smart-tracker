@@ -9,14 +9,14 @@ import './styles.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <SubscriptionProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <SubscriptionProvider>
         <ThemeProvider>
           <BrowserRouter>
             <App />
           </BrowserRouter>
         </ThemeProvider>
-      </AuthProvider>
-    </SubscriptionProvider>
+      </SubscriptionProvider>
+    </AuthProvider>
   </React.StrictMode>,
 );

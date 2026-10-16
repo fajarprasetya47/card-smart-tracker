@@ -1,5 +1,5 @@
-export type CardNetwork = 'visa' | 'mastercard';
-export type SubscriptionStatus = 'subscribed' | 'not_subscribed';
+export type CardNetwork = 'visa' | 'mastercard' | 'jcb';
+export type SubscriptionStatus = 'active' | 'inactive';
 
 export interface CreditCard {
   id: string;
@@ -9,21 +9,38 @@ export interface CreditCard {
   cardholderName: string;
   expiry: string;
   creditLimit: number;
+  availableLimit: number;
   currentBalance: number;
-  dueDate: string;
+  status: string;
+  activeSubscriptionCount: number;
+  totalActiveMonthlyAmount: number;
 }
 
 export interface Service {
   id: string;
+  cardId: string;
   name: string;
   category: string;
   monthlyPrice: number;
+  billingPeriod: 'monthly' | 'yearly' | 'weekly';
   icon: string;
-}
-
-export interface Subscription {
+  logoUrl: string | null;
+  description: string | null;
   status: SubscriptionStatus;
-  nextBillingDate?: string;
+  nextBillingDate: string | null;
 }
 
-export type SubscriptionMap = Record<string, Subscription>;
+export interface CreateSubscriptionInput {
+  serviceName: string;
+  category:
+    | 'ENTERTAINMENT'
+    | 'MUSIC'
+    | 'CLOUD_STORAGE'
+    | 'TRANSPORTATION'
+    | 'PRODUCTIVITY'
+    | 'EDUCATION'
+    | 'GAMING'
+    | 'OTHER';
+  billingAmount: number;
+  billingPeriod: 'MONTHLY';
+}

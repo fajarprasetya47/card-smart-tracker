@@ -4,11 +4,12 @@ import { CreditCardListItem } from '../components/CreditCardListItem';
 import { Icon } from '../components/Icon';
 import { PageHeader } from '../components/PageHeader';
 import { SimpleDialog } from '../components/SimpleDialog';
-import { cards } from '../data';
+import { useSubscriptions } from '../state/SubscriptionProvider';
 
 export function CreditCardsPage() {
   const navigate = useNavigate();
   const [addCardOpen, setAddCardOpen] = useState(false);
+  const { cards, cardsLoading, error, refreshCards, clearError } = useSubscriptions();
 
   return (
     <main className="page-shell cards-page">
@@ -25,11 +26,21 @@ export function CreditCardsPage() {
         <Icon name="sparkle" size={18} />
         <p><strong>AI tip:</strong> tap any card to view linked subscriptions and manage the services you use.</p>
       </div>
-      {cards.length === 0 ? (
+      {error && (
+        <div className="api-error" role="alert">
+          <span>{error}</span>
+          <button className="button-secondary" type="button" onClick={() => { clearError(); void refreshCards().catch(() => undefined); }}>
+            Retry
+          </button>
+        </div>
+      )}
+      {cardsLoading ? (
+        <p className="api-loading" role="status">Loading your cards…</p>
+      ) : cards.length === 0 && !error ? (
         <section className="empty-state">
           <span className="empty-symbol"><Icon name="card" size={26} /></span>
           <h1>No cards yet</h1>
-          <p>Add a card to see it here.</p>
+          <p>There are no credit cards linked to this account.</p>
         </section>
       ) : (
         <section className="cards-list" aria-label="Credit cards">
@@ -39,7 +50,7 @@ export function CreditCardsPage() {
       {addCardOpen && (
         <SimpleDialog
           title="Add card"
-          message="Add card is not available in this prototype."
+          message="The backend does not provide an endpoint to add a card yet. Please contact your bank to link a card to this account."
           onClose={() => setAddCardOpen(false)}
         />
       )}

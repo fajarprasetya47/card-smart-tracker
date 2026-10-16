@@ -6,9 +6,10 @@ interface DialogProps {
   message: string;
   onClose: () => void;
   actions: ReactNode;
+  children?: ReactNode;
 }
 
-export function Dialog({ title, message, onClose, actions }: DialogProps) {
+export function Dialog({ title, message, onClose, actions, children }: DialogProps) {
   const titleId = useId();
   const messageId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -44,6 +45,7 @@ export function Dialog({ title, message, onClose, actions }: DialogProps) {
         <span className="dialog-symbol"><Icon name="sparkle" size={21} /></span>
         <h2 id={titleId}>{title}</h2>
         <p id={messageId}>{message}</p>
+        {children}
         <div className="dialog-actions">{actions}</div>
       </div>
     </div>

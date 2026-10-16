@@ -1,10 +1,12 @@
 import type { CreditCard } from '../types';
-import { formatCurrency, formatDate } from '../utils';
-import { useCardSummary } from '../state/SubscriptionProvider';
+import { formatCurrency } from '../utils';
 import { Icon } from './Icon';
 
 export function CardSummary({ card }: { card: CreditCard }) {
-  const { activeCount, monthlyTotal, availableLimit, usagePercent } = useCardSummary(card.id);
+  const activeCount = card.activeSubscriptionCount;
+  const monthlyTotal = card.totalActiveMonthlyAmount;
+  const availableLimit = card.availableLimit;
+  const usagePercent = card.creditLimit === 0 ? 0 : (card.currentBalance / card.creditLimit) * 100;
   const usageWidth = Math.min(Math.max(usagePercent, 0), 100);
 
   return (
@@ -21,7 +23,6 @@ export function CardSummary({ card }: { card: CreditCard }) {
         <div className="summary-panel balance-detail-panel">
           <span className="summary-label">CURRENT BALANCE</span>
           <strong className="summary-value balance-red">{formatCurrency(card.currentBalance)}</strong>
-          <span className="due-date">Due {formatDate(card.dueDate)}</span>
         </div>
         <div className="summary-panel subscription-total-panel">
           <span className="summary-label">ACTIVE SUBSCRIPTIONS</span>

@@ -6,15 +6,18 @@ interface CreditCardVisualProps {
 }
 
 export function CreditCardVisual({ card, compact = false }: CreditCardVisualProps) {
+  const isMastercard = card.network === 'mastercard';
+  const networkLabel = card.network === 'visa' ? 'VISA' : card.network.toUpperCase();
+
   return (
-    <div className={`credit-card-visual ${card.network === 'mastercard' ? 'mastercard-card' : 'visa-card'} ${compact ? 'compact-card' : ''}`}>
+    <div className={`credit-card-visual ${isMastercard ? 'mastercard-card' : 'visa-card'} ${compact ? 'compact-card' : ''}`}>
       <div className="card-topline">
         <div>
-          <span className="card-issuer">NOVA {card.network === 'visa' ? 'VISA' : 'MASTERCARD'}</span>
+          <span className="card-issuer">BRI {networkLabel}</span>
           <strong>{card.name}</strong>
         </div>
         <span className={`network-mark ${card.network}`}>
-          {card.network === 'visa' ? 'VISA' : <><i /><i /></>}
+          {isMastercard ? <><i /><i /></> : networkLabel}
         </span>
       </div>
       <div className="card-chip" aria-hidden="true"><span /><span /><span /><span /></div>
