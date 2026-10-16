@@ -8,6 +8,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SignUpPage } from './pages/SignUpPage';
+import { ProtectedRoutes } from './ProtectedRoutes';
 import { useTheme } from './state/ThemeProvider';
 
 function App() {
@@ -19,10 +20,12 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/credit-cards" element={<CreditCardsPage />} />
-        <Route path="/credit-cards/:cardId" element={<CardDetailPage />} />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route element={<ProtectedRoutes />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/credit-cards" element={<CreditCardsPage />} />
+          <Route path="/credit-cards/:cardId" element={<CardDetailPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
       </Routes>
       <Toast />
       <ThemeToggle />

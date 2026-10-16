@@ -1,5 +1,7 @@
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { ServiceTile, type DashboardService } from '../components/ServiceTile';
+import { useAuth } from '../state/AuthProvider';
 import { formatCurrency } from '../utils';
 
 const serviceCards: DashboardService[] = [
@@ -23,16 +25,26 @@ const quickActions = [
 ];
 
 export function DashboardPage() {
+  const { session, logout } = useAuth();
+  const navigate = useNavigate();
+  const customerName = session?.customer.fullName ?? 'Customer';
+  const initials = customerName.charAt(0).toUpperCase();
+
+  function handleSignOut() {
+    logout();
+    navigate('/login', { replace: true });
+  }
+
   return (
     <main className="page-shell dashboard-page">
       <header className="dashboard-header">
         <div className="profile">
-          <div className="avatar" aria-hidden="true">B</div>
-          <div><span className="eyebrow">Good morning,</span><strong>Budi Hartono</strong></div>
+          <div className="avatar" aria-hidden="true">{initials}</div>
+          <div><span className="eyebrow">Good morning,</span><strong>{customerName}</strong></div>
         </div>
         <div className="header-actions">
           <button className="icon-button" type="button" aria-label="Notifications"><Icon name="bell" /></button>
-          <button className="icon-button" type="button" aria-label="Sign out"><Icon name="logout" /></button>
+          <button className="icon-button" type="button" aria-label="Sign out" onClick={handleSignOut}><Icon name="logout" /></button>
         </div>
       </header>
 

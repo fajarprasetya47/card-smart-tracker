@@ -5,7 +5,7 @@ Prototipe UI frontend untuk melihat kartu kredit dan mengelola status subscripti
 ## Fitur
 
 - Dashboard dengan navigasi ke modul kartu kredit.
-- Halaman login UI-only di `/login`, reset password di `/forgot-password`, dan pendaftaran di `/sign-up`.
+- Login backend JWT di `/login`, reset password UI prototype di `/forgot-password`, dan pendaftaran UI prototype di `/sign-up`.
 - Daftar kartu kredit mock beserta jaringan, nomor yang dimasking, saldo, limit, dan ringkasan subscription.
 - Halaman detail kartu dengan informasi limit, saldo, jatuh tempo, serta daftar layanan.
 - Subscribe langsung dan unsubscribe melalui dialog konfirmasi.
@@ -43,7 +43,20 @@ Jalankan development server:
 npm run dev
 ```
 
-Buka URL yang ditampilkan Vite di terminal (biasanya `http://localhost:5173`).
+Buka URL yang ditampilkan Vite di terminal (biasanya `http://localhost:5173`). Vite dikonfigurasi untuk menerima koneksi dari perangkat lain di jaringan lokal; gunakan IP laptop dan port `5173`, misalnya `http://192.168.1.10:5173`. Pastikan perangkat berada di jaringan yang sama dan firewall laptop mengizinkan koneksi tersebut. Jangan gunakan konfigurasi ini untuk mengekspos development server ke internet publik.
+
+## Konfigurasi backend
+
+Salin `.env.example` ke `.env.local` jika konfigurasi lokal berbeda:
+
+```env
+VITE_API_BASE_URL=/api
+VITE_API_PROXY_TARGET=http://localhost:18081
+```
+
+Development server Vite mem-proxy request `/api` ke backend pada `VITE_API_PROXY_TARGET`, sehingga request login tidak memerlukan CORS browser. Pastikan backend dan MySQL berjalan. Setelah mengubah file env, restart Vite.
+
+Login memakai `POST /api/auth/login`. JWT dan profil pengguna disimpan dalam `sessionStorage` selama tab browser aktif; token dihapus saat logout atau saat kedaluwarsa. Kredensial tidak disimpan. Route Dashboard dan kartu memerlukan sesi login. **Data kartu dan subscription masih mock frontend**; integrasi endpoint kartu merupakan tahap terpisah.
 
 ## Build production
 
@@ -63,7 +76,7 @@ npm run preview
 
 | Rute | Halaman |
 |---|---|
-| `/login` | Login prototype (tanpa autentikasi sungguhan) |
+| `/login` | Login backend |
 | `/forgot-password` | Reset password prototype (tanpa pengiriman email) |
 | `/sign-up` | Pendaftaran prototype (tanpa pembuatan akun) |
 | `/` | Dashboard |
@@ -85,8 +98,8 @@ State subscription dihitung per kombinasi ID kartu dan ID layanan. Jumlah subscr
 
 ## Batasan prototipe
 
-- Tidak ada backend, API, database, autentikasi sungguhan, atau integrasi eksternal.
-- Form login hanya memvalidasi input wajib/email melalui browser, lalu menuju Dashboard; kredensial tidak dikirim atau disimpan. Reset password dan sign up hanya simulasi UI serta tidak mengirim email atau membuat akun.
+- Login terhubung ke backend JWT. Endpoint reset password dan pendaftaran belum terhubung; keduanya hanya simulasi UI tanpa mengirim email atau membuat akun.
+- Daftar kartu dan subscription masih memakai data mock frontend; belum membaca atau mengubah data kartu melalui API.
 - Tidak ada data kartu sungguhan; nomor kartu hanya ditampilkan dalam bentuk masked.
 - Perubahan subscription hanya ada di memori browser dan kembali ke data awal setelah halaman dimuat ulang.
 - Preferensi tema juga hanya berada di memori; setelah reload, tema gelap menjadi default kembali.
@@ -98,6 +111,9 @@ State subscription dihitung per kombinasi ID kartu dan ID layanan. Jumlah subscr
 ```text
 src/
   App.tsx
+  api/
+    auth.ts
+    sessionStorage.ts
   components/
     AuthBrand.tsx
     CardSummary.tsx
@@ -124,6 +140,7 @@ src/
     NotFoundPage.tsx
     SignUpPage.tsx
   state/
+    AuthProvider.tsx
     SubscriptionProvider.tsx
     ThemeProvider.tsx
   styles.css
