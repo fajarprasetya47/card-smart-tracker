@@ -5,6 +5,7 @@ Prototipe UI frontend untuk melihat kartu kredit dan mengelola status subscripti
 ## Fitur
 
 - Dashboard dengan navigasi ke modul kartu kredit.
+- Halaman login UI-only di `/login`, reset password di `/forgot-password`, dan pendaftaran di `/sign-up`.
 - Daftar kartu kredit mock beserta jaringan, nomor yang dimasking, saldo, limit, dan ringkasan subscription.
 - Halaman detail kartu dengan informasi limit, saldo, jatuh tempo, serta daftar layanan.
 - Subscribe langsung dan unsubscribe melalui dialog konfirmasi.
@@ -61,6 +62,9 @@ npm run preview
 
 | Rute | Halaman |
 |---|---|
+| `/login` | Login prototype (tanpa autentikasi sungguhan) |
+| `/forgot-password` | Reset password prototype (tanpa pengiriman email) |
+| `/sign-up` | Pendaftaran prototype (tanpa pembuatan akun) |
 | `/` | Dashboard |
 | `/credit-cards` | Daftar kartu kredit |
 | `/credit-cards/:cardId` | Detail kartu dan pengelolaan layanan |
@@ -80,7 +84,8 @@ State subscription dihitung per kombinasi ID kartu dan ID layanan. Jumlah subscr
 
 ## Batasan prototipe
 
-- Tidak ada backend, API, database, autentikasi, atau integrasi eksternal.
+- Tidak ada backend, API, database, autentikasi sungguhan, atau integrasi eksternal.
+- Form login hanya memvalidasi input wajib/email melalui browser, lalu menuju Dashboard; kredensial tidak dikirim atau disimpan. Reset password dan sign up hanya simulasi UI serta tidak mengirim email atau membuat akun.
 - Tidak ada data kartu sungguhan; nomor kartu hanya ditampilkan dalam bentuk masked.
 - Perubahan subscription hanya ada di memori browser dan kembali ke data awal setelah halaman dimuat ulang.
 - Tombol tambah kartu hanya menampilkan pemberitahuan; tidak menambahkan kartu.
@@ -90,11 +95,33 @@ State subscription dihitung per kombinasi ID kartu dan ID layanan. Jumlah subscr
 
 ```text
 src/
-  App.tsx                         # Rute, halaman, dan komponen UI
-  data.ts                         # Data mock kartu dan layanan
-  main.tsx                        # Entry point React dan provider
-  state/SubscriptionProvider.tsx  # State subscription dan ringkasan kartu
-  styles.css                      # Tema dan layout responsif
-  types.ts                        # Tipe data
-  utils.ts                        # Format tanggal, mata uang, dan ID state
+  App.tsx
+  components/
+    AuthBrand.tsx
+    CardSummary.tsx
+    ConfirmDialog.tsx
+    CreditCardListItem.tsx
+    CreditCardVisual.tsx
+    Dialog.tsx
+    Icon.tsx
+    PageHeader.tsx
+    ServiceTile.tsx
+    SimpleDialog.tsx
+    SubscriptionItem.tsx
+    SubscriptionList.tsx
+    Toast.tsx
+  data.ts
+  main.tsx
+  pages/
+    CardDetailPage.tsx
+    CreditCardsPage.tsx
+    DashboardPage.tsx
+    ForgotPasswordPage.tsx
+    LoginPage.tsx
+    NotFoundPage.tsx
+    SignUpPage.tsx
+  state/SubscriptionProvider.tsx
+  styles.css
+  types.ts
+  utils.ts
 ```
