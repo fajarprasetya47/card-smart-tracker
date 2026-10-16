@@ -14,6 +14,7 @@ Prototipe UI frontend untuk melihat kartu kredit dan mengelola status subscripti
 - Modal mock untuk tombol tambah kartu.
 - Rute kartu tidak ditemukan dan halaman 404.
 - Layout responsif untuk mobile, tablet, dan desktop.
+- Toggle tema gelap/terang yang berlaku di seluruh halaman selama aplikasi terbuka.
 
 ## Teknologi
 
@@ -88,6 +89,7 @@ State subscription dihitung per kombinasi ID kartu dan ID layanan. Jumlah subscr
 - Form login hanya memvalidasi input wajib/email melalui browser, lalu menuju Dashboard; kredensial tidak dikirim atau disimpan. Reset password dan sign up hanya simulasi UI serta tidak mengirim email atau membuat akun.
 - Tidak ada data kartu sungguhan; nomor kartu hanya ditampilkan dalam bentuk masked.
 - Perubahan subscription hanya ada di memori browser dan kembali ke data awal setelah halaman dimuat ulang.
+- Preferensi tema juga hanya berada di memori; setelah reload, tema gelap menjadi default kembali.
 - Tombol tambah kartu hanya menampilkan pemberitahuan; tidak menambahkan kartu.
 - Fitur layanan selain kartu kredit hanya ditampilkan sebagai “Coming soon”.
 
@@ -109,6 +111,7 @@ src/
     SimpleDialog.tsx
     SubscriptionItem.tsx
     SubscriptionList.tsx
+    ThemeToggle.tsx
     Toast.tsx
   data.ts
   main.tsx
@@ -120,7 +123,9 @@ src/
     LoginPage.tsx
     NotFoundPage.tsx
     SignUpPage.tsx
-  state/SubscriptionProvider.tsx
+  state/
+    SubscriptionProvider.tsx
+    ThemeProvider.tsx
   styles.css
   types.ts
   utils.ts
