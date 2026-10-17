@@ -77,30 +77,28 @@ npm run preview
 
 ## Menjalankan dengan Docker
 
-Image frontend menyajikan build production melalui Nginx. Nginx meneruskan request `/api/` ke container backend bernama `backend` pada port `8080`, jadi jalankan kedua container pada Docker network yang sama.
-
-Build image dari root project:
+Jalankan seluruh stack—MySQL, backend, dan frontend—dari root project:
 
 ```bash
-docker build -t card-smart-tracker-frontend .
-docker build -t card-smart-tracker-backend ./smart-card-be
+docker compose up --build -d
 ```
 
-Contoh menjalankan database dan aplikasi:
+Frontend tersedia di `http://localhost:3001` dan Swagger UI backend di `http://localhost:18082/swagger-ui/index.html`. Nginx pada container frontend meneruskan request `/api/` ke backend melalui network Docker. MySQL menyimpan datanya pada named volume `mysql_data`.
+
+Lihat status dan log:
 
 ```bash
-docker compose -f smart-card-be/docker-compose.yml up -d
-docker run -d --name backend --network smart-card-be_default \
-  -p 8080:8080 \
-  -e SPRING_DATASOURCE_URL='jdbc:mysql://mysql:3306/cardsmarttrackdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Jakarta' \
-  -e APP_JWT_SECRET="$(openssl rand -base64 48)" \
-  card-smart-tracker-backend
-docker run -d --name frontend --network smart-card-be_default \
-  -p 3000:80 \
-  card-smart-tracker-frontend
+docker compose ps
+docker compose logs -f
 ```
 
-Buka frontend di `http://localhost:3000` dan Swagger UI backend di `http://localhost:8080/swagger-ui/index.html`. Jika port `3306` sudah dipakai, atur port host database di `smart-card-be/docker-compose.yml` sebelum menjalankannya. Untuk menggunakan API backend di host lain, bangun ulang frontend dengan `--build-arg VITE_API_BASE_URL=https://<host>/api` dan pastikan konfigurasi CORS backend mengizinkan origin frontend.
+Hentikan stack tanpa menghapus data database:
+
+```bash
+docker compose down
+```
+
+Port host default (`FRONTEND_PORT=3001`, `BACKEND_PORT=18082`, `MYSQL_PORT=3309`) dipilih agar tidak berbenturan dengan service lain. Atur variabel tersebut di file `.env` di root project bila ingin menggunakan port berbeda. Untuk deployment, ganti kredensial database dan atur `APP_JWT_SECRET` yang kuat dan persisten melalui `.env`; nilai bawaan hanya untuk development lokal. Jangan commit `.env`.
 
 ## Rute aplikasi
 

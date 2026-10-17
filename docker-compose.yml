@@ -1,0 +1,48 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-cardsmarttrackdb}
+      MYSQL_USER: ${MYSQL_USER:-briuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-bripassword}
+    ports:
+      - "${MYSQL_PORT:-3309}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./smart-card-be
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-cardsmarttrackdb}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Jakarta
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-briuser}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-bripassword}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    ports:
+      - "${BACKEND_PORT:-18082}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3001}:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
