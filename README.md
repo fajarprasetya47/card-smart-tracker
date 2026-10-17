@@ -75,6 +75,33 @@ Untuk melihat hasil build secara lokal:
 npm run preview
 ```
 
+## Menjalankan dengan Docker
+
+Image frontend menyajikan build production melalui Nginx. Nginx meneruskan request `/api/` ke container backend bernama `backend` pada port `8080`, jadi jalankan kedua container pada Docker network yang sama.
+
+Build image dari root project:
+
+```bash
+docker build -t card-smart-tracker-frontend .
+docker build -t card-smart-tracker-backend ./smart-card-be
+```
+
+Contoh menjalankan database dan aplikasi:
+
+```bash
+docker compose -f smart-card-be/docker-compose.yml up -d
+docker run -d --name backend --network smart-card-be_default \
+  -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL='jdbc:mysql://mysql:3306/cardsmarttrackdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Jakarta' \
+  -e APP_JWT_SECRET="$(openssl rand -base64 48)" \
+  card-smart-tracker-backend
+docker run -d --name frontend --network smart-card-be_default \
+  -p 3000:80 \
+  card-smart-tracker-frontend
+```
+
+Buka frontend di `http://localhost:3000` dan Swagger UI backend di `http://localhost:8080/swagger-ui/index.html`. Jika port `3306` sudah dipakai, atur port host database di `smart-card-be/docker-compose.yml` sebelum menjalankannya. Untuk menggunakan API backend di host lain, bangun ulang frontend dengan `--build-arg VITE_API_BASE_URL=https://<host>/api` dan pastikan konfigurasi CORS backend mengizinkan origin frontend.
+
 ## Rute aplikasi
 
 | Rute | Halaman |
